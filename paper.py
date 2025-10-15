@@ -170,12 +170,21 @@ class ArxivPaper:
             if match:
                 conclusion = match.group(0)
         llm = get_llm()
-        prompt = """Given the title, abstract, introduction and the conclusion (if any) of a paper in latex format, generate a one-sentence TLDR summary in __LANG__:
-        
-        \\title{__TITLE__}
-        \\begin{abstract}__ABSTRACT__\\end{abstract}
-        __INTRODUCTION__
-        __CONCLUSION__
+        prompt = """请根据提供的论文信息（标题、摘要、引言和结论），**严格按照以下结构**，用中文生成总结：
+
+第一句话：总结本篇工作是解决大型模型（LLM/CV/NLP/AI等细分领域）的什么具体问题。
+第二句话（可选）：总结现有方法的主要缺陷或不足。如果论文信息中未明确提及缺陷或无法合理推断出，**请省略此句话，不要生成，并将后续句子的序号顺延。**
+第三句话：阐述作者获得了什么核心启发，促成了这项工作的诞生。
+第四、五句话：详细描述本文提出的核心方法和关键技术细节（共两句话）。
+第六句话：总结实验效果，并得出最终结论。
+
+请根据第二句话是否生成，输出总共五句话或六句话的总结内容，无需输出标题或额外的说明文字。
+
+论文信息（LaTeX格式）：
+\title{__TITLE__}
+\begin{abstract}__ABSTRACT__\end{abstract}
+__INTRODUCTION__
+__CONCLUSION__
         """
         prompt = prompt.replace('__LANG__', llm.lang)
         prompt = prompt.replace('__TITLE__', self.title)
@@ -193,7 +202,7 @@ class ArxivPaper:
             messages=[
                 {
                     "role": "system",
-                    "content": "You are an assistant who perfectly summarizes scientific paper, and gives the core idea of the paper to the user.",
+                    "content": "您是专业的科研论文总结助手，您的任务是根据提供的论文信息，严格按照用户指定的结构和条件，用中文生成一篇精确、详尽的总结（总结应为五句话或六句话）。",
                 },
                 {"role": "user", "content": prompt},
             ]
